@@ -1,3 +1,7 @@
+# Authors: Denis A. Engemann <denis.engemann@gmail.com>
+#
+# License: BSD (3-clause)
+
 import config as cfg
 
 import numpy as np

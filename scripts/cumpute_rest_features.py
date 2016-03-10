@@ -1,3 +1,8 @@
+# Authors: Danilo Bzdok <danilbzdok@gmail.com>
+#          Denis A. Engemann <denis.engemann@gmail.com>
+#
+# License: BSD (3-clause)
+
 import os
 import glob
 import numpy as np
@@ -97,6 +102,7 @@ def extract_features(subject, results_dir, s3fun=s3fun):
     fname = 'debug_ratlas.nii.gz'
     r_atlas_nii.to_filename(fname)
     s3fun(fname)
+
     nlm = NiftiLabelsMasker(
         labels_img=r_atlas_nii, mask_img=mask_file,
         standardize=True, detrend=True)
@@ -105,6 +111,7 @@ def extract_features(subject, results_dir, s3fun=s3fun):
     FS_regpool = nlm.transform(all_sub_rs_maps)
     fname = '%i_regs_timeseries' % subject
     np.save(fname, FS_regpool)
+    s3fun(fname)
 
     # compute network sparse inverse covariance
 
