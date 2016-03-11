@@ -2,7 +2,7 @@
 #          Denis A. Engemann <denis.engemann@gmail.com>
 #
 # License: BSD (3-clause)
-
+import time
 import os
 import os.path as op
 from argparse import ArgumentParser
@@ -183,4 +183,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     subject = args.subject
+    start_time = time.time()
     extract_features(subject)
+    elapsed_time = time.time() - start_time
+    print('Elapsed time {}'.format(
+        time.strftime('%H:%M:%S', time.gmtime(elapsed_time))))
