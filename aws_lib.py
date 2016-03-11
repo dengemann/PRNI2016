@@ -18,8 +18,10 @@ def download_from_s3(aws_access_key_id, aws_secret_access_key, bucket, fname,
     if my_key.exists():
         s3fid = bucket.get_key(key)
         s3fid.get_contents_to_filename(fname)
+        return True
     else:
         print('could not get %s : it does not exist' % key)
+        return False
 
 
 def upload_to_s3(aws_access_key_id, aws_secret_access_key, fname, bucket, key,

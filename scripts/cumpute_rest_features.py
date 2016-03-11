@@ -37,8 +37,8 @@ def put_s3fun(fname, delete_if_good=True):
 
 
 def get_s3_fun(key, fname):
-    download_from_s3(hcp_aws_access_key_id, hcp_aws_secret_access_key,
-                     bucket='hcp-openaccess', fname=fname, key=key)
+    return download_from_s3(hcp_aws_access_key_id, hcp_aws_secret_access_key,
+                            bucket='hcp-openaccess', fname=fname, key=key)
 
 
 def extract_features(subject, results_dir, s3fun=put_s3fun):
@@ -47,8 +47,8 @@ def extract_features(subject, results_dir, s3fun=put_s3fun):
         fname = ('HCP_900/{0}/MNINonLinear/Results/rfMRI_REST{1}_LR/'
                  'rfMRI_REST{1}_LR.nii.gz').format(subject, run_index)
         out_fname = fname.split('/')[-1]
-        get_s3_fun(key=fname, fname=out_fname)
-        rs_files.append(out_fname)
+        if get_s3_fun(key=fname, fname=out_fname):
+            rs_files.append(out_fname)
     # grab the LR and RL phase encoding rest images from one subject
     mask_file = nib.load('anat_data/grey10_icbm_3mm_bin.nii.gz')
 
