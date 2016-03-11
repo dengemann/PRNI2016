@@ -12,9 +12,14 @@ def download_from_s3(aws_access_key_id, aws_secret_access_key, bucket, fname,
     """Download file from bucket
     """
     com = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
-    com.get_bucket(bucket, validate=False)
-    s3fid = com.get_key(key)
-    s3fid.get_contents_to_filename(fname)
+    bucket = com.get_bucket(bucket, validate=False)
+    my_key = Key(bucket)
+    my_key.key = key
+    if my_key.exists():
+        s3fid = bucket.get_key(key)
+        s3fid.get_contents_to_filename(fname)
+    else:
+        print('could not get %s : it does not exist' % key)
 
 
 def upload_to_s3(aws_access_key_id, aws_secret_access_key, fname, bucket, key,

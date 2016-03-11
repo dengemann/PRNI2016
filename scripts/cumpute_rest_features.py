@@ -4,7 +4,6 @@
 # License: BSD (3-clause)
 
 import os
-import glob
 import numpy as np
 import nibabel as nib
 from nilearn.image import concat_imgs
@@ -14,7 +13,7 @@ from nilearn.input_data import NiftiLabelsMasker
 from sklearn.covariance import GraphLassoCV
 from nilearn.image import index_img
 from nilearn.image import resample_img
-from aws_lib import upload_to_s3
+from aws_lib import download_from_s3, upload_to_s3
 import pandas as pd
 
 aws_details = pd.read_csv('aws_details.csv')
@@ -26,7 +25,7 @@ hcp_aws_access_key_id = aws_details['Access Key Id']
 hcp_aws_secret_access_key = aws_details['Secret Access Key']
 
 
-def s3fun(fname, delete_if_good=True):
+def put_s3fun(fname, delete_if_good=True):
     good = upload_to_s3(
         aws_access_key_id, aws_secret_access_key, fname=fname,
         bucket='swish-data', key=fname)
@@ -37,11 +36,19 @@ def s3fun(fname, delete_if_good=True):
         print('something went wrong with %s' % fname)
 
 
-def extract_features(subject, results_dir, s3fun=s3fun):
-    os.mkdir(results_dir)
-    rs_files = glob.glob(
-        '%s/MNINonLinear/Results/rfMRI_REST1_??/rfMRI_REST1_??.nii.gz' %
-        subject)
+def get_s3_fun(key, fname):
+    download_from_s3(hcp_aws_access_key_id, hcp_aws_secret_access_key,
+                     bucket='hcp-openaccess', fname=fname, key=key)
+
+
+def extract_features(subject, results_dir, s3fun=put_s3fun):
+    rs_files = list()
+    for run_index in [1, 2]:
+        fname = ('HCP_900/{0}/MNINonLinear/Results/rfMRI_REST{1}_LR/'
+                 'rfMRI_REST{1}_LR.nii.gz').format(subject, run_index)
+        out_fname = fname.split('/')[-1]
+        get_s3_fun(key=fname, fname=out_fname)
+        rs_files.append(out_fname)
     # grab the LR and RL phase encoding rest images from one subject
     mask_file = nib.load('anat_data/grey10_icbm_3mm_bin.nii.gz')
 
