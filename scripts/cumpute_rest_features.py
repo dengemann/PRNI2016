@@ -54,7 +54,10 @@ def extract_features(subject, s3fun=put_s3fun):
         fname = ('HCP_900/{0}/MNINonLinear/Results/rfMRI_REST{1}_LR/'
                  'rfMRI_REST{1}_LR.nii.gz').format(subject, run_index)
         out_fname = fname.split('/')[-1]
-        if get_s3_fun(key=fname, fname=out_fname):
+        if not op.exists(out_fname):
+            if get_s3_fun(key=fname, fname=out_fname):
+                rs_files.append(out_fname)
+        else:
             rs_files.append(out_fname)
     # grab the LR and RL phase encoding rest images from one subject
     mask_file = nib.load('anat_data/grey10_icbm_3mm_bin.nii.gz')
