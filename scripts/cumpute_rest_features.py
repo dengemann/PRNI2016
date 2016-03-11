@@ -99,6 +99,7 @@ def extract_features(subject, s3fun=put_s3fun):
     FS_netproj = nmm.transform(all_sub_rs_maps)
     fname = op.join(results_dir, '%s_nets_timeseries' % subject)
     np.save(fname, FS_netproj)
+    fname += '.npy'
     s3fun(fname)
     print('done')
 
@@ -113,6 +114,7 @@ def extract_features(subject, s3fun=put_s3fun):
                 fname,
                 gsc_nets.covariance_ if 'cov' in fname else
                 gsc_nets.precision_)
+            fname += '.npy'
             s3fun(fname, gsc_nets.precision_)
         print('done')
     except:
@@ -151,6 +153,7 @@ def extract_features(subject, s3fun=put_s3fun):
     fname = '%s_regs_timeseries' % subject
     fname = op.join(results_dir, fname)
     np.save(fname, FS_regpool)
+    fname += '.npy'
     s3fun(fname)
     print('done')
     # compute network sparse inverse covariance
@@ -165,6 +168,7 @@ def extract_features(subject, s3fun=put_s3fun):
                 fname,
                 gsc_nets.covariance_ if 'cov' in fname else
                 gsc_nets.precision_)
+            fname += '.npy'
             s3fun(fname)
         print('done')
     except:
