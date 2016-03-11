@@ -97,7 +97,7 @@ def extract_features(subject, s3fun=put_s3fun):
 
     print('extracting network projections')
     FS_netproj = nmm.transform(all_sub_rs_maps)
-    fname = op.join(results_dir, '%i_nets_timeseries' % subject)
+    fname = op.join(results_dir, '%s_nets_timeseries' % subject)
     np.save(fname, FS_netproj)
     s3fun(fname)
     print('done')
@@ -107,7 +107,7 @@ def extract_features(subject, s3fun=put_s3fun):
         print('extracting network sparse inverse cov')
         gsc_nets = GraphLassoCV(verbose=2, alphas=20)
         gsc_nets.fit(FS_netproj)
-        for fname in ('%i_nets_cov' % subject, '%i_nets_prec' % subject):
+        for fname in ('%s_nets_cov' % subject, '%s_nets_prec' % subject):
             fname = op.join(results_dir, fname)
             np.save(
                 fname,
@@ -148,7 +148,7 @@ def extract_features(subject, s3fun=put_s3fun):
 
     nlm.fit()
     FS_regpool = nlm.transform(all_sub_rs_maps)
-    fname = '%i_regs_timeseries' % subject
+    fname = '%s_regs_timeseries' % subject
     fname = op.join(results_dir, fname)
     np.save(fname, FS_regpool)
     s3fun(fname)
@@ -159,7 +159,7 @@ def extract_features(subject, s3fun=put_s3fun):
         print('extracting regpool sparse inverse cov')
         gsc_nets = GraphLassoCV(verbose=2, alphas=20)
         gsc_nets.fit(FS_regpool)
-        for fname in ('%i_regs_cov' % subject, '%i_regs_prec' % subject):
+        for fname in ('%s_regs_cov' % subject, '%s_regs_prec' % subject):
             fname = op.join(results_dir, fname)
             np.save(
                 fname,
