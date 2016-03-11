@@ -109,7 +109,10 @@ def extract_features(subject, s3fun=put_s3fun):
         print('extracting network sparse inverse cov')
         for fname in ('%i_nets_cov' % subject, '%i_nets_prec' % subject):
             fname = op.join(results_dir, fname)
-            np.save(fname, gsc_nets.covariance_)
+            np.save(
+                fname,
+                gsc_nets.covariance_ if 'cov' in fname else
+                gsc_nets.precision_)
             s3fun(fname, gsc_nets.precision_)
         print('done')
     except:
@@ -158,8 +161,11 @@ def extract_features(subject, s3fun=put_s3fun):
         print('extracting regpool sparse inverse cov')
         for fname in ('%i_regs_cov' % subject, '%i_regs_prec' % subject):
             fname = op.join(results_dir, fname)
-            np.save(fname, gsc_nets.covariance_)
-            s3fun(fname, gsc_nets.precision_)
+            np.save(
+                fname,
+                gsc_nets.covariance_ if 'cov' in fname else
+                gsc_nets.precision_)
+            s3fun(fname)
         print('done')
     except:
         pass
