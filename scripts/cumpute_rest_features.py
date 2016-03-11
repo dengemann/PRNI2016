@@ -21,6 +21,10 @@ aws_details = pd.read_csv('aws_details.csv')
 aws_access_key_id = aws_details['Access Key Id']
 aws_secret_access_key = aws_details['Secret Access Key']
 
+aws_details = pd.read_csv('aws_hcp_details.csv')
+hcp_aws_access_key_id = aws_details['Access Key Id']
+hcp_aws_secret_access_key = aws_details['Secret Access Key']
+
 
 def s3fun(fname, delete_if_good=True):
     good = upload_to_s3(
@@ -39,7 +43,7 @@ def extract_features(subject, results_dir, s3fun=s3fun):
         '%s/MNINonLinear/Results/rfMRI_REST1_??/rfMRI_REST1_??.nii.gz' %
         subject)
     # grab the LR and RL phase encoding rest images from one subject
-    mask_file = nib.load('data/grey10_icbm_3mm_bin.nii.gz')
+    mask_file = nib.load('anat_data/grey10_icbm_3mm_bin.nii.gz')
 
     #  may take a while ! -> unpacks 2 1TB gz archives
     #  timeit on MBP: 1 loops, best of 1: 2min 13s

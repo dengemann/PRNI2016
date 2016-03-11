@@ -1,7 +1,20 @@
+# Authors: Denis A. Engemann <denis.engemann@gmail.com>
+#
+# License: BSD (3-clause)
+
 import os
 import boto
 from boto.s3.key import Key
-os.environ['S3_USE_SIGV4'] = 'True'
+
+
+def download_from_s3(aws_access_key_id, aws_secret_access_key, bucket, fname,
+                     key):
+    """Download file from bucket
+    """
+    com = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
+    com.get_bucket(bucket, validate=False)
+    s3fid = com.get_key(key)
+    s3fid.get_contents_to_filename(fname)
 
 
 def upload_to_s3(aws_access_key_id, aws_secret_access_key, fname, bucket, key,
@@ -23,6 +36,11 @@ def upload_to_s3(aws_access_key_id, aws_secret_access_key, fname, bucket, key,
 
     Returns boolean indicating success/failure of upload.
     """
+    switch_validation = False
+    if host is not None:
+        if 'eu-central' in host:
+            switch_validation = True
+            os.environ['S3_USE_SIGV4'] = 'True'
     com = boto.connect_s3(aws_access_key_id, aws_secret_access_key, host=host)
     bucket = com.get_bucket(bucket, validate=True)
     s3_key = Key(bucket)
@@ -43,6 +61,10 @@ def upload_to_s3(aws_access_key_id, aws_secret_access_key, fname, bucket, key,
             rewind=True)
         # Rewind for later use
         fid.seek(0)
+
+    if switch_validation:
+        del os.environ['S3_USE_SIGV4']
+
     if sent == size:
         return True
     return False
