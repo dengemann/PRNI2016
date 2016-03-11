@@ -20,12 +20,12 @@ from aws_lib import download_from_s3, upload_to_s3
 import pandas as pd
 
 aws_details = pd.read_csv('aws_details.csv')
-aws_access_key_id = aws_details['Access Key Id']
-aws_secret_access_key = aws_details['Secret Access Key']
+aws_access_key_id = aws_details['Access Key Id'].values[0]
+aws_secret_access_key = aws_details['Secret Access Key'].values[0]
 
 aws_details = pd.read_csv('aws_hcp_details.csv')
-hcp_aws_access_key_id = aws_details['Access Key Id']
-hcp_aws_secret_access_key = aws_details['Secret Access Key']
+hcp_aws_access_key_id = aws_details['Access Key Id'].values[0]
+hcp_aws_secret_access_key = aws_details['Secret Access Key'].values[0]
 
 
 def put_s3fun(fname, delete_if_good=True):
