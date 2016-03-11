@@ -4,6 +4,7 @@
 # License: BSD (3-clause)
 
 import os
+import os.path as op
 import numpy as np
 import nibabel as nib
 from nilearn.image import concat_imgs
@@ -42,6 +43,10 @@ def get_s3_fun(key, fname):
 
 
 def extract_features(subject, results_dir, s3fun=put_s3fun):
+    results_dir = op.join(op.curdir, 'data', subject)
+    if not op.exists(results_dir):
+        op.makedirs(results_dir)
+
     rs_files = list()
     for run_index in [1, 2]:
         fname = ('HCP_900/{0}/MNINonLinear/Results/rfMRI_REST{1}_LR/'
@@ -73,12 +78,12 @@ def extract_features(subject, results_dir, s3fun=put_s3fun):
         standardize=True, detrend=True)
     nmm.fit()
 
-    fname = 'dbg_ica_maps.nii.gz'
+    fname = op.join(results_dir, 'dbg_ica_maps.nii.gz')
     nmm.maps_img_.to_filename(fname)
     s3fun(fname)
 
     FS_netproj = nmm.transform(all_sub_rs_maps)
-    fname = '%i_nets_timeseries' % subject
+    fname = op.join(results_dir, '%i_nets_timeseries' % subject)
     np.save(fname, FS_netproj)
     s3fun(fname)
 
@@ -88,6 +93,7 @@ def extract_features(subject, results_dir, s3fun=put_s3fun):
         gsc_nets.fit(FS_netproj)
 
         for fname in ('%i_nets_cov' % subject, '%i_nets_prec' % subject):
+            fname = op.join(results_dir, fname)
             np.save(fname, gsc_nets.covariance_)
             s3fun(fname, gsc_nets.precision_)
 
@@ -111,6 +117,7 @@ def extract_features(subject, results_dir, s3fun=put_s3fun):
         interpolation='nearest'
     )
     fname = 'debug_ratlas.nii.gz'
+    fname = op.join(results_dir, fname)
     r_atlas_nii.to_filename(fname)
     s3fun(fname)
 
@@ -121,6 +128,7 @@ def extract_features(subject, results_dir, s3fun=put_s3fun):
     nlm.fit()
     FS_regpool = nlm.transform(all_sub_rs_maps)
     fname = '%i_regs_timeseries' % subject
+    fname = op.join(results_dir, fname)
     np.save(fname, FS_regpool)
     s3fun(fname)
 
@@ -130,6 +138,7 @@ def extract_features(subject, results_dir, s3fun=put_s3fun):
         gsc_nets = GraphLassoCV(verbose=2, alphas=20)
         gsc_nets.fit(FS_regpool)
         for fname in ('%i_regs_cov' % subject, '%i_regs_prec' % subject):
+            fname = op.join(results_dir, fname)
             np.save(fname, gsc_nets.covariance_)
             s3fun(fname, gsc_nets.precision_)
     except:
