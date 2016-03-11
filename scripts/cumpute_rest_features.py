@@ -70,7 +70,7 @@ def extract_features(subject, s3fun=put_s3fun):
     #  may take a while ! -> unpacks 2 1TB gz archives
     #  timeit on MBP: 1 loops, best of 1: 2min 13s
     print('concatenating niftis')
-    all_sub_rs_maps = concat_imgs(rs_files)
+    all_sub_rs_maps = concat_imgs(rs_files, verbose=2)
 
     cur_shape = all_sub_rs_maps.get_data().shape
     size_in_GB = all_sub_rs_maps.get_data().nbytes / 1e9
@@ -84,19 +84,19 @@ def extract_features(subject, s3fun=put_s3fun):
     smith_pkg = ds.fetch_atlas_smith_2009()
     icas_path = smith_pkg['rsn20']
 
+    print('extracting ica maps')
     nmm = NiftiMapsMasker(
         mask_img=mask_file, maps_img=icas_path, resampling_target='mask',
         standardize=True, detrend=True)
     nmm.fit()
 
-    print('extracting ica maps')
     fname = op.join(results_dir, 'dbg_ica_maps.nii.gz')
     nmm.maps_img_.to_filename(fname)
     s3fun(fname)
     print('done')
 
-    FS_netproj = nmm.transform(all_sub_rs_maps)
     print('extracting network projections')
+    FS_netproj = nmm.transform(all_sub_rs_maps)
     fname = op.join(results_dir, '%i_nets_timeseries' % subject)
     np.save(fname, FS_netproj)
     s3fun(fname)
@@ -104,9 +104,9 @@ def extract_features(subject, s3fun=put_s3fun):
 
     # compute network sparse inverse covariance
     try:
+        print('extracting network sparse inverse cov')
         gsc_nets = GraphLassoCV(verbose=2, alphas=20)
         gsc_nets.fit(FS_netproj)
-        print('extracting network sparse inverse cov')
         for fname in ('%i_nets_cov' % subject, '%i_nets_prec' % subject):
             fname = op.join(results_dir, fname)
             np.save(
@@ -141,13 +141,13 @@ def extract_features(subject, s3fun=put_s3fun):
     s3fun(fname)
     print('done')
 
+    print('extracting sub region maps')
     nlm = NiftiLabelsMasker(
         labels_img=r_atlas_nii, mask_img=mask_file,
         standardize=True, detrend=True)
 
     nlm.fit()
     FS_regpool = nlm.transform(all_sub_rs_maps)
-    print('extracting sub region maps')
     fname = '%i_regs_timeseries' % subject
     fname = op.join(results_dir, fname)
     np.save(fname, FS_regpool)
@@ -156,9 +156,9 @@ def extract_features(subject, s3fun=put_s3fun):
     # compute network sparse inverse covariance
 
     try:
+        print('extracting regpool sparse inverse cov')
         gsc_nets = GraphLassoCV(verbose=2, alphas=20)
         gsc_nets.fit(FS_regpool)
-        print('extracting regpool sparse inverse cov')
         for fname in ('%i_regs_cov' % subject, '%i_regs_prec' % subject):
             fname = op.join(results_dir, fname)
             np.save(
@@ -169,6 +169,10 @@ def extract_features(subject, s3fun=put_s3fun):
         print('done')
     except:
         pass
+    print('cleaning up')
+    for fname in rs_files:
+        os.remove(fname)
+    print('done')
 
 if __name__ == '__main__':
 
