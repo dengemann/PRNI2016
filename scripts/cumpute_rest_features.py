@@ -31,7 +31,7 @@ hcp_aws_secret_access_key = aws_details['Secret Access Key'].values[0]
 def put_s3fun(fname, delete_if_good=True):
     good = upload_to_s3(
         aws_access_key_id, aws_secret_access_key, fname=fname,
-        bucket='swish-data', key=fname)
+        bucket='swish-data', key=fname.lstrip('./'))
     if good:
         print('all is good, uploaded and removing %s' % fname)
         os.remove(fname)
