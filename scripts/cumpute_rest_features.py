@@ -5,6 +5,8 @@
 
 import os
 import os.path as op
+from argparse import ArgumentParser
+
 import numpy as np
 import nibabel as nib
 from nilearn.image import concat_imgs
@@ -42,7 +44,7 @@ def get_s3_fun(key, fname):
                             bucket='hcp-openaccess', fname=fname, key=key)
 
 
-def extract_features(subject, results_dir, s3fun=put_s3fun):
+def extract_features(subject, s3fun=put_s3fun):
     results_dir = op.join(op.curdir, 'data', subject)
     if not op.exists(results_dir):
         op.makedirs(results_dir)
@@ -143,3 +145,14 @@ def extract_features(subject, results_dir, s3fun=put_s3fun):
             s3fun(fname, gsc_nets.precision_)
     except:
         pass
+
+if __name__ == '__main__':
+
+    parser = ArgumentParser(description='tell subject')
+    parser.add_argument('--subject', metavar='subject', type=str, nargs='?',
+                        default=None,
+                        help='the subject to extract')
+
+    args = parser.parse_args()
+    subject = args.subject
+    extract_features(subject)
