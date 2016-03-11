@@ -76,6 +76,9 @@ def extract_features(subject, s3fun=put_s3fun):
     size_in_GB = all_sub_rs_maps.get_data().nbytes / 1e9
     print('% rs images: %.2f GB' % (cur_shape[-1], size_in_GB))
     print('done')
+    for fname in rs_files:
+        os.remove(fname)
+
     #########################################################################
     # dump network projections
     #########################################################################
@@ -174,8 +177,6 @@ def extract_features(subject, s3fun=put_s3fun):
     except:
         pass
     print('cleaning up')
-    for fname in rs_files:
-        os.remove(fname)
     print('done')
 
 if __name__ == '__main__':
