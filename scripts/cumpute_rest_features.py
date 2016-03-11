@@ -55,6 +55,7 @@ def extract_features(subject, s3fun=put_s3fun):
                  'rfMRI_REST{1}_LR.nii.gz').format(subject, run_index)
         out_fname = fname.split('/')[-1]
         if not op.exists(out_fname):
+            print('Trying to get %s' % fname)
             if get_s3_fun(key=fname, fname=out_fname):
                 rs_files.append(out_fname)
         else:
