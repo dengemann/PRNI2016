@@ -58,19 +58,24 @@ def extract_features(subject, s3fun=put_s3fun):
             print('Trying to get %s' % fname)
             if get_s3_fun(key=fname, fname=out_fname):
                 rs_files.append(out_fname)
+            print('Done')
         else:
             rs_files.append(out_fname)
+
+    print('starting feature extraction')
     # grab the LR and RL phase encoding rest images from one subject
+
     mask_file = nib.load('anat_data/grey10_icbm_3mm_bin.nii.gz')
 
     #  may take a while ! -> unpacks 2 1TB gz archives
     #  timeit on MBP: 1 loops, best of 1: 2min 13s
+    print('concatenating niftis')
     all_sub_rs_maps = concat_imgs(rs_files)
 
     cur_shape = all_sub_rs_maps.get_data().shape
     size_in_GB = all_sub_rs_maps.get_data().nbytes / 1e9
     print('% rs images: %.2f GB' % (cur_shape[-1], size_in_GB))
-
+    print('done')
     #########################################################################
     # dump network projections
     #########################################################################
@@ -84,25 +89,29 @@ def extract_features(subject, s3fun=put_s3fun):
         standardize=True, detrend=True)
     nmm.fit()
 
+    print('extracting ica maps')
     fname = op.join(results_dir, 'dbg_ica_maps.nii.gz')
     nmm.maps_img_.to_filename(fname)
     s3fun(fname)
+    print('done')
 
     FS_netproj = nmm.transform(all_sub_rs_maps)
+    print('extracting network projections')
     fname = op.join(results_dir, '%i_nets_timeseries' % subject)
     np.save(fname, FS_netproj)
     s3fun(fname)
+    print('done')
 
     # compute network sparse inverse covariance
     try:
         gsc_nets = GraphLassoCV(verbose=2, alphas=20)
         gsc_nets.fit(FS_netproj)
-
+        print('extracting network sparse inverse cov')
         for fname in ('%i_nets_cov' % subject, '%i_nets_prec' % subject):
             fname = op.join(results_dir, fname)
             np.save(fname, gsc_nets.covariance_)
             s3fun(fname, gsc_nets.precision_)
-
+        print('done')
     except:
         pass
 
@@ -122,10 +131,12 @@ def extract_features(subject, s3fun=put_s3fun):
         target_shape=mask_file.shape,
         interpolation='nearest'
     )
+    print('extracting atlas')
     fname = 'debug_ratlas.nii.gz'
     fname = op.join(results_dir, fname)
     r_atlas_nii.to_filename(fname)
     s3fun(fname)
+    print('done')
 
     nlm = NiftiLabelsMasker(
         labels_img=r_atlas_nii, mask_img=mask_file,
@@ -133,20 +144,23 @@ def extract_features(subject, s3fun=put_s3fun):
 
     nlm.fit()
     FS_regpool = nlm.transform(all_sub_rs_maps)
+    print('extracting sub region maps')
     fname = '%i_regs_timeseries' % subject
     fname = op.join(results_dir, fname)
     np.save(fname, FS_regpool)
     s3fun(fname)
-
+    print('done')
     # compute network sparse inverse covariance
 
     try:
         gsc_nets = GraphLassoCV(verbose=2, alphas=20)
         gsc_nets.fit(FS_regpool)
+        print('extracting regpool sparse inverse cov')
         for fname in ('%i_regs_cov' % subject, '%i_regs_prec' % subject):
             fname = op.join(results_dir, fname)
             np.save(fname, gsc_nets.covariance_)
             s3fun(fname, gsc_nets.precision_)
+        print('done')
     except:
         pass
 
