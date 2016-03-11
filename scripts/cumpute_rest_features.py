@@ -47,7 +47,7 @@ def get_s3_fun(key, fname):
 def extract_features(subject, s3fun=put_s3fun):
     results_dir = op.join(op.curdir, 'data', subject)
     if not op.exists(results_dir):
-        op.makedirs(results_dir)
+        os.makedirs(results_dir)
 
     rs_files = list()
     for run_index in [1, 2]:
