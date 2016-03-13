@@ -2,6 +2,7 @@
 #          Denis A. Engemann <denis.engemann@gmail.com>
 #
 # License: BSD (3-clause)
+import sys
 import time
 import os
 import os.path as op
@@ -66,9 +67,11 @@ def extract_features(subject, s3fun=put_s3fun, runs=['1'],
                 print('Trying to get %s' % fname)
                 if get_s3_fun(key=fname, fname=out_fname):
                     rs_files.append(out_fname)
-                print('Done')
+                    print('Done')
             else:
                 rs_files.append(out_fname)
+    if not rs_files:
+        return False
 
     print('starting feature extraction')
     # grab the LR and RL phase encoding rest images from one subject
@@ -185,7 +188,11 @@ def extract_features(subject, s3fun=put_s3fun, runs=['1'],
     except:
         pass
     print('cleaning up')
+    with open(op.join(results_dir, 'done'), 'w') as fid:
+        fid.write('completed subject %s' % subject)
+        pass
     print('done')
+    return True
 
 if __name__ == '__main__':
 
@@ -197,7 +204,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     subject = args.subject
     start_time = time.time()
-    extract_features(subject)
+    res = extract_features(subject)
     elapsed_time = time.time() - start_time
     print('Elapsed time {}'.format(
         time.strftime('%H:%M:%S', time.gmtime(elapsed_time))))
+    if not res:
+        sys.exit('could not find requested files for %s' % subject)
