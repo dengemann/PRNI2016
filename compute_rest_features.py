@@ -50,6 +50,7 @@ def get_s3_fun(key, fname):
 
 def extract_features(subject, s3fun=put_s3fun, runs=['1'],
                      phase_coding=['LR']):
+    start_time = time.time()
     prefix = 'runs-{}_pcoding-{}'.format(
         '-'.join(runs), '-'.join(phase_coding))
     results_dir = op.join(storage_dir, 'fmri-rest-features', prefix, subject)
@@ -188,9 +189,13 @@ def extract_features(subject, s3fun=put_s3fun, runs=['1'],
     except:
         pass
     print('cleaning up')
-    with open(op.join(results_dir, 'done'), 'w') as fid:
-        fid.write('completed subject %s' % subject)
-        pass
+    done_file = op.join(results_dir, 'done')
+    elapsed_time = time.time() - start_time
+    with open(done_file, 'w') as fid:
+        fid.write(
+            'Elapsed time {}'.format(
+                time.strftime('%H:%M:%S', time.gmtime(elapsed_time))))
+    s3fun(done_file)
     print('done')
     return True
 
