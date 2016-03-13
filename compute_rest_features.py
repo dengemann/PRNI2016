@@ -28,6 +28,7 @@ aws_details = pd.read_csv('aws_hcp_details.csv')
 hcp_aws_access_key_id = aws_details['Access Key Id'].values[0]
 hcp_aws_secret_access_key = aws_details['Secret Access Key'].values[0]
 
+
 storage_dir = '/mnt'
 
 
@@ -49,7 +50,7 @@ def get_s3_fun(key, fname):
 
 
 def extract_features(subject, s3fun=put_s3fun, runs=['1'],
-                     phase_coding=['LR']):
+                     phase_coding=['LR'], storage_dir='/mnt'):
     start_time = time.time()
     prefix = 'runs-{}_pcoding-{}'.format(
         '-'.join(runs), '-'.join(phase_coding))
@@ -205,11 +206,15 @@ if __name__ == '__main__':
     parser.add_argument('--subject', metavar='subject', type=str, nargs='?',
                         default=None,
                         help='the subject to extract')
+    parser.add_argument('--storage_dir', metavar='storage_dir', type=str,
+                        nargs='?', default='/mnt',
+                        help='the storage dir')
 
     args = parser.parse_args()
+    storage_dir = args.storage_dir
     subject = args.subject
     start_time = time.time()
-    res = extract_features(subject)
+    res = extract_features(subject, storage_dir=storage_dir)
     elapsed_time = time.time() - start_time
     print('Elapsed time {}'.format(
         time.strftime('%H:%M:%S', time.gmtime(elapsed_time))))
