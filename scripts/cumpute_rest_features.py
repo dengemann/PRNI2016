@@ -27,11 +27,14 @@ aws_details = pd.read_csv('aws_hcp_details.csv')
 hcp_aws_access_key_id = aws_details['Access Key Id'].values[0]
 hcp_aws_secret_access_key = aws_details['Secret Access Key'].values[0]
 
+storage_dir = '/dev/xvdb'
+
 
 def put_s3fun(fname, delete_if_good=True):
+    key = fname.split(storage_dir)[-1].lstrip('./')
     good = upload_to_s3(
         aws_access_key_id, aws_secret_access_key, fname=fname,
-        bucket='swish-data', key=fname.lstrip('./'))
+        bucket='swish-data', key=key)
     if good:
         print('all is good, uploaded and removing %s' % fname)
         os.remove(fname)
@@ -45,7 +48,7 @@ def get_s3_fun(key, fname):
 
 
 def extract_features(subject, s3fun=put_s3fun):
-    results_dir = op.join(op.curdir, 'data', subject)
+    results_dir = op.join(storage_dir, 'fmri-data', subject)
     if not op.exists(results_dir):
         os.makedirs(results_dir)
 
