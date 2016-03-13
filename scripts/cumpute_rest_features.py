@@ -47,23 +47,28 @@ def get_s3_fun(key, fname):
                             bucket='hcp-openaccess', fname=fname, key=key)
 
 
-def extract_features(subject, s3fun=put_s3fun):
-    results_dir = op.join(storage_dir, 'fmri-data', subject)
+def extract_features(subject, s3fun=put_s3fun, runs=['1'],
+                     phase_coding=['LR']):
+    prefix = 'runs-{}_pcoding-{}'.format(
+        '-'.join(runs), '-'.join(phase_coding))
+    results_dir = op.join(storage_dir, 'fmri-rest-features', prefix, subject)
     if not op.exists(results_dir):
         os.makedirs(results_dir)
 
     rs_files = list()
-    for run_index in [1, 2]:
-        fname = ('HCP_900/{0}/MNINonLinear/Results/rfMRI_REST{1}_LR/'
-                 'rfMRI_REST{1}_LR.nii.gz').format(subject, run_index)
-        out_fname = fname.split('/')[-1]
-        if not op.exists(out_fname):
-            print('Trying to get %s' % fname)
-            if get_s3_fun(key=fname, fname=out_fname):
+    for run_index in runs:  # XXX adjust runs / LR / RL
+        for coding in phase_coding:
+            fname = ('HCP_900/{0}/MNINonLinear/Results/rfMRI_REST{1}_{2}/'
+                     'rfMRI_REST{1}_{2}.nii.gz').format(
+                         subject, run_index, coding)
+            out_fname = fname.split('/')[-1]
+            if not op.exists(out_fname):
+                print('Trying to get %s' % fname)
+                if get_s3_fun(key=fname, fname=out_fname):
+                    rs_files.append(out_fname)
+                print('Done')
+            else:
                 rs_files.append(out_fname)
-            print('Done')
-        else:
-            rs_files.append(out_fname)
 
     print('starting feature extraction')
     # grab the LR and RL phase encoding rest images from one subject
