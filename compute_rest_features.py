@@ -62,7 +62,7 @@ def extract_features(subject, s3fun=put_s3fun, runs=['1'],
             fname = ('HCP_900/{0}/MNINonLinear/Results/rfMRI_REST{1}_{2}/'
                      'rfMRI_REST{1}_{2}.nii.gz').format(
                          subject, run_index, coding)
-            out_fname = '-'.join(subject, fname.split('/')[-1])
+            out_fname = '-'.join([subject, fname.split('/')[-1]])
             if not op.exists(out_fname):
                 print('Trying to get %s' % fname)
                 if get_s3_fun(key=fname, fname=out_fname):
