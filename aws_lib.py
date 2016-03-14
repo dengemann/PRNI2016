@@ -8,7 +8,7 @@ from boto.s3.key import Key
 
 
 def download_from_s3(aws_access_key_id, aws_secret_access_key, bucket, fname,
-                     key, host='s3.eu-central-1.amazonaws.com'):
+                     key, dry_run=False, host='s3.eu-central-1.amazonaws.com'):
     """Download file from bucket
     """
     switch_validation = False
@@ -21,10 +21,14 @@ def download_from_s3(aws_access_key_id, aws_secret_access_key, bucket, fname,
     bucket = com.get_bucket(bucket, validate=False)
     my_key = Key(bucket)
     my_key.key = key
+    out = False
     if my_key.exists():
-        s3fid = bucket.get_key(key)
-        s3fid.get_contents_to_filename(fname)
-        out = True
+        if not dry_run:
+            s3fid = bucket.get_key(key)
+            s3fid.get_contents_to_filename(fname)
+            out = True
+        else:
+            return True
     else:
         print('could not get %s : it does not exist' % key)
         out = False
