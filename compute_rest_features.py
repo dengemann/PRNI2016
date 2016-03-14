@@ -49,11 +49,19 @@ def get_s3_fun(key, fname):
                             bucket='hcp-openaccess', fname=fname, key=key)
 
 
+def check_done(prefix, subject):
+    key = op.join(prefix, subject, 'done')
+    return download_from_s3(aws_access_key_id, aws_secret_access_key,
+                            bucket='swish-data', fname=key, key=key)
+
+
 def extract_features(subject, s3fun=put_s3fun, runs=['1'],
                      phase_coding=['LR'], storage_dir='/mnt'):
     start_time = time.time()
     prefix = 'runs-{}_pcoding-{}'.format(
         '-'.join(runs), '-'.join(phase_coding))
+    if check_done(prefix, subject):
+        return 'exists'
     results_dir = op.join(storage_dir, 'fmri-rest-features', prefix, subject)
     if not op.exists(results_dir):
         os.makedirs(results_dir)
@@ -220,3 +228,5 @@ if __name__ == '__main__':
         time.strftime('%H:%M:%S', time.gmtime(elapsed_time))))
     if not res:
         sys.exit('could not find requested files for %s' % subject)
+    elif res == 'exists':
+        sys.exit('requested files already for %s' % subject)
