@@ -17,7 +17,7 @@ def download_from_s3(aws_access_key_id, aws_secret_access_key, bucket, fname,
             switch_validation = True
             os.environ['S3_USE_SIGV4'] = 'True'
 
-    com = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
+    com = boto.connect_s3(aws_access_key_id, aws_secret_access_key, host=host)
     bucket = com.get_bucket(bucket, validate=False)
     my_key = Key(bucket)
     my_key.key = key
