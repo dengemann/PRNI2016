@@ -8,7 +8,7 @@ from boto.s3.key import Key
 
 
 def download_from_s3(aws_access_key_id, aws_secret_access_key, bucket, fname,
-                     key, dry_run=False, host='s3.eu-central-1.amazonaws.com'):
+                     key, dry_run=False, host=None):
     """Download file from bucket
     """
     switch_validation = False

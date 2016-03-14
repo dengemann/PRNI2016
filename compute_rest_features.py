@@ -53,7 +53,7 @@ def check_done(prefix, subject):
     key = op.join(prefix, subject, 'done')
     return download_from_s3(aws_access_key_id, aws_secret_access_key,
                             bucket='swish-data', fname='test', key=key,
-                            dry_run=True)
+                            dry_run=True, host='s3.eu-central-1.amazonaws.com')
 
 
 def extract_features(subject, s3fun=put_s3fun, runs=['1'],
@@ -61,7 +61,7 @@ def extract_features(subject, s3fun=put_s3fun, runs=['1'],
     start_time = time.time()
     prefix = 'runs-{}_pcoding-{}'.format(
         '-'.join(runs), '-'.join(phase_coding))
-    if check_done(op.join('fmri-rest-features', prefix, subject), subject):
+    if check_done(op.join('fmri-rest-features', prefix), subject):
         return 'exists'
     results_dir = op.join(storage_dir, 'fmri-rest-features', prefix, subject)
     if not op.exists(results_dir):
