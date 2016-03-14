@@ -61,9 +61,9 @@ def extract_features(subject, s3fun=put_s3fun, runs=['1'],
     start_time = time.time()
     prefix = 'runs-{}_pcoding-{}'.format(
         '-'.join(runs), '-'.join(phase_coding))
-    results_dir = op.join(storage_dir, 'fmri-rest-features', prefix, subject)
-    if check_done(results_dir, subject):
+    if check_done(op.join('fmri-rest-features', prefix, subject), subject):
         return 'exists'
+    results_dir = op.join(storage_dir, 'fmri-rest-features', prefix, subject)
     if not op.exists(results_dir):
         os.makedirs(results_dir)
 
