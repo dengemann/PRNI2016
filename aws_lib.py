@@ -4,7 +4,7 @@
 
 import os
 import boto
-import boto.connection
+import boto.s3.connection
 from boto.s3.key import Key
 
 
