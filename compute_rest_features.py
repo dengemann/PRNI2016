@@ -52,7 +52,7 @@ def get_s3_fun(key, fname):
 def check_done(prefix, subject):
     key = op.join(prefix, subject, 'done')
     return download_from_s3(aws_access_key_id, aws_secret_access_key,
-                            bucket='swish-data', fname=key, key=key)
+                            bucket='swish-data', fname='test', key=key)
 
 
 def extract_features(subject, s3fun=put_s3fun, runs=['1'],
