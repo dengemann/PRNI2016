@@ -4,11 +4,13 @@
 
 import os
 import boto
+import boto.connection
 from boto.s3.key import Key
 
 
 def download_from_s3(aws_access_key_id, aws_secret_access_key, bucket, fname,
-                     key, dry_run=False, host=None):
+                     key, dry_run=False,
+                     host=boto.s3.connection.NoHostProvided()):
     """Download file from bucket
     """
     switch_validation = False
