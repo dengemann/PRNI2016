@@ -14,7 +14,8 @@ def download_from_s3(aws_access_key_id, aws_secret_access_key, bucket, fname,
     """Download file from bucket
     """
     switch_validation = False
-    if host is not None:
+    if host is not None and not isinstance(
+            host, boto.s3.connection.NoHostProvided):
         if 'eu-central' in host:
             switch_validation = True
             os.environ['S3_USE_SIGV4'] = 'True'
