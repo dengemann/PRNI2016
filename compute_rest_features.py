@@ -207,7 +207,7 @@ if __name__ == '__main__':
                         default=None,
                         help='the subject to extract')
     parser.add_argument('--storage_dir', metavar='storage_dir', type=str,
-                        nargs='?', default='/mnt',
+                        nargs='?', default=storage_dir,
                         help='the storage dir')
 
     args = parser.parse_args()
