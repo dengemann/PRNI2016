@@ -8,9 +8,15 @@ from boto.s3.key import Key
 
 
 def download_from_s3(aws_access_key_id, aws_secret_access_key, bucket, fname,
-                     key):
+                     key, host='s3.eu-central-1.amazonaws.com'):
     """Download file from bucket
     """
+    switch_validation = False
+    if host is not None:
+        if 'eu-central' in host:
+            switch_validation = True
+            os.environ['S3_USE_SIGV4'] = 'True'
+
     com = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
     bucket = com.get_bucket(bucket, validate=False)
     my_key = Key(bucket)
@@ -18,10 +24,13 @@ def download_from_s3(aws_access_key_id, aws_secret_access_key, bucket, fname,
     if my_key.exists():
         s3fid = bucket.get_key(key)
         s3fid.get_contents_to_filename(fname)
-        return True
+        out = True
     else:
         print('could not get %s : it does not exist' % key)
-        return False
+        out = False
+    if switch_validation:
+        del os.environ['S3_USE_SIGV4']
+    return out
 
 
 def upload_to_s3(aws_access_key_id, aws_secret_access_key, fname, bucket, key,
