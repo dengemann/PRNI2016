@@ -69,9 +69,11 @@ def get_s3_results():
             os.makedirs(this_out_dir)
         if check_done(prefix=prefix, subject=subject):
             for fname in get_bucket_paths(prefix=prefix, subject=subject):
-                if not get_s3_fun(  # XXX paths not generalized
-                        key=fname, fname=op.join('data', fname)):
-                    failed.append({'subject': subject, 'key': fname})
+                out_fname = op.join('data', fname)
+                if not op.exists(out_fname):
+                    if not get_s3_fun(  # XXX paths not generalized
+                            key=fname, fname=out_fname):
+                        failed.append({'subject': subject, 'key': fname})
     failed = df.DataFrame(failed)
     return failed
 
