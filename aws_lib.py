@@ -64,6 +64,8 @@ def upload_to_s3(aws_access_key_id, aws_secret_access_key, fname, bucket, key,
                  callback=None, md5=None, reduced_redundancy=False,
                  content_type=None, host='s3.eu-central-1.amazonaws.com'):
     """
+    XXX copied from somewher on stackoverflow. Hope to find it again.
+
     Uploads the given file to the AWS S3
     bucket and key specified.
 
