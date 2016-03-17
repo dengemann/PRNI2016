@@ -81,7 +81,6 @@ def run_parallel(script, args, par_args, par_target):
     command = shlex.split(cmd)
     print('Running command: ')
     print(cmd)
-    # import pdb; pdb.set_trace()
     subprocess.call(command, shell=False)
 
 if __name__ == '__main__':

@@ -3,9 +3,27 @@
 # License: BSD (3-clause)
 
 import os
+import os.path as op
 import boto
 import boto.s3.connection
 from boto.s3.key import Key
+from boto.ec2 import EC2Connection
+from boto.ec2.blockdevicemapping import BlockDeviceMapping, BlockDeviceType
+from mne.utils import _TempDir
+
+mapping = BlockDeviceMapping()
+mapping["/dev/sdb"] = BlockDeviceType(ephemeral_name='ephemeral0')
+
+_base_template = """#!/bin/bash
+echo "updating code ..."
+source /home/ubuntu/.bashrc
+source /home/ubuntu/miniconda2/bin/activate swish
+/home/ubuntu/miniconda2/bin/pip install boto
+cd (/home/ubuntu/github/PRNI2016
+    && git pull origin master
+    && echo "updating code ... done"
+    && {cmd})
+"""
 
 
 def download_from_s3(aws_access_key_id, aws_secret_access_key, bucket, fname,
@@ -91,3 +109,46 @@ def upload_to_s3(aws_access_key_id, aws_secret_access_key, fname, bucket, key,
     if sent == size:
         return True
     return False
+
+
+def get_test_script(subjects, poweroff=True):
+    script = 'python compute_test_s3 --subject {subjects}'.format(
+        subjects=' '.join(subjects))
+    cmd = _base_template.format(cmd=script)
+    if poweroff:
+        cmd += '\nsudo poweroff'
+    return cmd
+
+
+def get_run_parallel_script(subjects, script, poweroff=True, n_par=1):
+    parallel_cmd = ('python run_parallel.py --script {script} '
+                    '--par_target subject --par_args {subjects} '
+                    '--n_par {n_par}').format(
+                        subjects=' '.join(subjects),
+                        script=script,
+                        n_par=n_par)
+
+    cmd = _base_template.format(cmd=parallel_cmd)
+    if poweroff:
+        cmd += '\nsudo poweroff'
+    return cmd
+
+
+def instance_run_jobs(script_str,
+                      aws_access_key_id=None, aws_secret_access_key=None,
+                      instance_type='t2.micro', dry_run=False):
+    tmp_dir = _TempDir()
+    start_script = op.join(tmp_dir, 'cmd.sh')
+    with open(start_script, 'w') as fid:
+        fid.write(script_str)
+
+    ec2con = EC2Connection(aws_access_key_id=aws_access_key_id,
+                           aws_secret_access_key=aws_secret_access_key)
+
+    out = ec2con.run_instances(
+        image_id='ami-62474008', min_count=1, instance_type=instance_type,
+        key_name='test-node-virginia', user_data='file://' + start_script,
+        dry_run=dry_run, instance_initiated_shutdown_behavior='terminate',
+        instance_profile_name='push-to-swish', block_device_map=mapping,
+        security_groups=['launch-wizard-1'])
+    return out
