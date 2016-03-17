@@ -5,6 +5,7 @@
 import os
 import os.path as op
 import boto
+import base64
 import boto.s3.connection
 from boto.s3.key import Key
 from boto.ec2 import EC2Connection
@@ -19,10 +20,10 @@ echo "updating code ..."
 source /home/ubuntu/.bashrc
 source /home/ubuntu/miniconda2/bin/activate swish
 /home/ubuntu/miniconda2/bin/pip install boto
-cd (/home/ubuntu/github/PRNI2016
-    && git pull origin master
-    && echo "updating code ... done"
-    && {cmd})
+(cd /home/ubuntu/github/PRNI2016
+  && git pull origin master
+  && echo "updating code ... done"
+  && {cmd})
 """
 
 
@@ -134,20 +135,16 @@ def get_run_parallel_script(subjects, script, poweroff=True, n_par=1):
     return cmd
 
 
-def instance_run_jobs(script_str,
+def instance_run_jobs(code,
                       aws_access_key_id=None, aws_secret_access_key=None,
                       instance_type='t2.micro', dry_run=False):
-    tmp_dir = _TempDir()
-    start_script = op.join(tmp_dir, 'cmd.sh')
-    with open(start_script, 'w') as fid:
-        fid.write(script_str)
 
     ec2con = EC2Connection(aws_access_key_id=aws_access_key_id,
                            aws_secret_access_key=aws_secret_access_key)
-
+    import pdb; pdb.set_trace()
     out = ec2con.run_instances(
         image_id='ami-62474008', min_count=1, instance_type=instance_type,
-        key_name='test-node-virginia', user_data='file://' + start_script,
+        key_name='test-node-virginia', user_data=code,
         dry_run=dry_run, instance_initiated_shutdown_behavior='terminate',
         instance_profile_name='push-to-swish', block_device_map=mapping,
         security_groups=['launch-wizard-1'])
