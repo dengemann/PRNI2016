@@ -38,7 +38,7 @@ def put_s3fun(fname, delete_if_good=True):
 def test_s3(subject, storage_dir='/mnt', s3fun=put_s3fun):
     start_time = time.time()
     print('launching test')
-    results_dir = op.join(storage_dir, subject, 's3-test')
+    results_dir = op.join(storage_dir, 's3-test', subject)
     if not op.exists(results_dir):
         os.makedirs(results_dir)
 
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     parser.add_argument('--subject', metavar='subject', type=str, nargs='?',
                         default=None,
                         help='the subject to extract')
-    parser.add_argument('--storage_dir', metavar='storage_dir', type=str,
+    parser.add_argument('--storage-dir', metavar='storage_dir', type=str,
                         nargs='?', default=storage_dir,
                         help='the storage dir')
 
