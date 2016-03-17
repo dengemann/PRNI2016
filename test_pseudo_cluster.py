@@ -1,3 +1,7 @@
+# Authors: Denis A. Engemann <denis.engemann@gmail.com>
+#
+# License: BSD (3-clause)
+
 import pandas as pd
 from sklearn.model_selection import KFold
 from aws_lib import (

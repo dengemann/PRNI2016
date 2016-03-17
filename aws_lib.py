@@ -135,6 +135,9 @@ def get_run_parallel_script(subjects, script, poweroff=True, n_par=1):
     cmd = _base_template.format(cmd=parallel_cmd)
     if poweroff:
         cmd += '\nsudo poweroff'
+        
+        
+        
     return cmd
 
 
