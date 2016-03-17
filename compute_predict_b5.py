@@ -36,11 +36,11 @@ import nibabel as nib
 import pandas
 from sklearn.preprocessing import StandardScaler
 from sklearn.cross_validation import ShuffleSplit
-from sklearn.linear_model import Lasso
+from sklearn.linear_model import Lasso, LassoCV
 # gather the data
 mask_file = nib.load('data/grey10_icbm_3mm_bin.nii.gz')
 
-
+from sklearn.ensemble import RandomForestRegressor
 for cur_ana in ['nets_prec', 'nets_cov', 'regs_prec', 'regs_cov']:
     print('-' * 80)
     cur_paths = glob.glob('data/fmri-rest-features/'
@@ -75,21 +75,28 @@ for cur_ana in ['nets_prec', 'nets_cov', 'regs_prec', 'regs_cov']:
         item_data = np.load(item)
         FS_brain.append(item_data[idx])
     FS_brain = np.array(FS_brain)
-    FS_brain = StandardScaler().fit_transform(FS_brain)
+    # FS_brain = StandardScaler().fit_transform(FS_brain)
 
     for i_beh in range(5):
         scores = np.nan_to_num(beh_scores[:, i_beh])[:, None]
         title = beh_titles[i_beh]
 
-        clf = Lasso(alpha=1.0)
-        scores = StandardScaler().fit_transform(scores)
+        clf = LassoCV(alpha=1.0)
+        # clf = RandomForestRegressor(n_estimators=1000, max_depth=3)
 
         coefs = []
         r2_list = []
-        folder = ShuffleSplit(n=len(scores), n_iter=500, test_size=0.1)
-        for train, test in folder:
-            clf.fit(X=FS_brain[train], y=scores[train])
-            r2 = clf.score(FS_brain[test], scores[test])
+        folder = ShuffleSplit(n=len(scores), n_iter=100, test_size=0.1)
+        y = StandardScaler().fit_transform(scores)
+        for ii, (train, test) in enumerate(folder):
+            scaler = StandardScaler().fit(FS_brain[train])
+            X_train = scaler.transform(FS_brain[train])
+            clf.fit(X=X_train, y=y[train])
+            X_test = scaler.transform(FS_brain[test])
+            r2 = clf.score(X_test, y[test])
+            r2_insample = clf.score(X_train, y[train])
+            print 'fold %i of 100 -- r2=%0.3f -- r2_ins=%0.3f' % (
+                ii, r2, r2_insample)
             r2_list.append(r2)
         mean_r2 = np.mean(r2_list)
         print('%s/%s/mean-R2: %.4f' % (cur_ana, title, mean_r2))
