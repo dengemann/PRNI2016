@@ -20,10 +20,11 @@ echo "updating code ..."
 source /home/ubuntu/.bashrc
 source /home/ubuntu/miniconda2/bin/activate swish
 /home/ubuntu/miniconda2/bin/pip install boto
-(cd /home/ubuntu/github/PRNI2016
-  && git pull origin master
-  && echo "updating code ... done"
+(cd /home/ubuntu/github/PRNI2016 \
+  && git pull origin master \
+  && echo "updating code ... done" \
   && {cmd})
+
 """
 
 
@@ -141,7 +142,7 @@ def instance_run_jobs(code,
 
     ec2con = EC2Connection(aws_access_key_id=aws_access_key_id,
                            aws_secret_access_key=aws_secret_access_key)
-    import pdb; pdb.set_trace()
+
     out = ec2con.run_instances(
         image_id='ami-62474008', min_count=1, instance_type=instance_type,
         key_name='test-node-virginia', user_data=code,
