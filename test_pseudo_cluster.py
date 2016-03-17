@@ -2,30 +2,52 @@
 #
 # License: BSD (3-clause)
 
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import KFold
-from aws_lib import (
-    instance_run_jobs, get_run_parallel_script, 
-    get_test_script)
+from boto.ec2.blockdevicemapping import BlockDeviceMapping, BlockDeviceType
+
+from aws_hacks import (
+    instance_run_jobs,
+    make_start_script,
+    get_run_parallel_script)
 
 aws_details = pd.read_csv('aws_details.csv')
 aws_access_key_id = aws_details['Access Key Id'].values[0]
 aws_secret_access_key = aws_details['Secret Access Key'].values[0]
 
-aws_details = pd.read_csv('aws_hcp_details.csv')
-hcp_aws_access_key_id = aws_details['Access Key Id'].values[0]
-hcp_aws_secret_access_key = aws_details['Secret Access Key'].values[0]
+mapping = BlockDeviceMapping()
+mapping["/dev/sdb"] = BlockDeviceType(ephemeral_name='ephemeral0')
 
 df = pd.read_csv('data/unrestricted_dengemann_2_21_2016_4_40_21.csv')
 
 n_instances = 10
-kfold = KFold(n_folds=n_instances)
-meg_subjects = df[df.MEG_AnyData].Subject.values
+abused_kfold = KFold(n_folds=n_instances)  # convenience-hack
 
-for ii, (_, test) in enumerate(kfold.split(meg_subjects)):
-    subjects = meg_subjects[test].astype(str).tolist()
-    script_str = get_run_parallel_script(subjects, 'compute_test_s3.py')
+subjects = np.array(['test-sub-%0.3d' % i for i in range(100)])
+
+startup_script_tmp = make_start_script(
+    cmd='{cmd}',  # leave this open
+    repo='PRNI2016',
+    anaconda_path='miniconda2',
+    env='swish',
+    install_pip=['boto'],
+    add_swap_file=False
+)
+
+parallel_params = dict(
+    script='compute_test_s3.py',  # run this script
+    par_target='subject',  # for each subject
+    n_par=1  # 1 job each
+)
+
+for ii, (_, test) in enumerate(abused_kfold.split(subjects)):
+    this_subjects = subjects[test]
+
+    parallel_params.update(par_args=this_subjects)
+    parallel_cmd = get_run_parallel_script(parallel_params)
+    code = startup_script_tmp.format(cmd=parallel_cmd)
     out = instance_run_jobs(
-        script_str,
+        code=code,
         aws_access_key_id=aws_access_key_id,
         aws_secret_access_key=aws_secret_access_key, dry_run=False)
