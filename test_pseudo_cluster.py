@@ -49,5 +49,13 @@ for ii, (_, test) in enumerate(abused_kfold.split(subjects)):
     code = startup_script_tmp.format(cmd=parallel_cmd)
     out = instance_run_jobs(
         code=code,
+        image_id='ami-62474008',
+        key_name='test-node-virginia',
         aws_access_key_id=aws_access_key_id,
-        aws_secret_access_key=aws_secret_access_key, dry_run=False)
+        aws_secret_access_key=aws_secret_access_key,
+        dry_run=True,
+        min_count=1,
+        instance_type='t2.micro',
+        block_device_map=mapping,
+        security_groups=['launch-wizard-1']
+    )
