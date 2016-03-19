@@ -47,6 +47,7 @@ for ii, (_, test) in enumerate(abused_kfold.split(subjects)):
     parallel_params.update(par_args=this_subjects)
     parallel_cmd = get_run_parallel_script(parallel_params)
     code = startup_script_tmp.format(cmd=parallel_cmd)
+
     out = instance_run_jobs(
         code=code,
         image_id='ami-62474008',
