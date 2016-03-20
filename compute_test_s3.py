@@ -8,7 +8,7 @@ import os
 import os.path as op
 from argparse import ArgumentParser
 
-from aws_lib import upload_to_s3
+from aws_hacks import upload_to_s3
 import pandas as pd
 
 aws_details = pd.read_csv('aws_details.csv')
